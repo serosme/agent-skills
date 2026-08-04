@@ -1,23 +1,13 @@
 ---
 name: commit
-description: 通过分析暂存区更改，生成 Conventional Commits 风格的提交信息。当用户需要编写提交信息时使用。
+description: 通过分析暂存区更改，生成提交信息，并给出对应的 git commit 命令。当用户需要编写提交信息时使用。
 ---
 
 # Commit Skill
 
-根据暂存区变更生成符合 Conventional Commits 规范的提交信息。
+## Subject
 
-## 格式
-
-```text
-<type>: <description>
-```
-
-## 规则
-
-### Subject
-
-#### type
+### type
 
 站在本仓库使用者的角度，判断本次变更带来的实质影响。
 
@@ -40,19 +30,18 @@ description: 通过分析暂存区更改，生成 Conventional Commits 风格的
 | 业务应用 | 升级依赖版本      | `chore`    | 使用者无感知           |
 | 工具库   | 重命名私有方法    | `refactor` | 使用者无感知           |
 
-#### description
+### description
 
 - 使用祈使语气，说明本次提交做了什么
 - 首字母小写（英文），末尾不加句号
 - 不超过 72 字符
 
-### 语言
+## 约束
 
-- 优先使用最近一次提交所用的语言
-- 若无法确定，默认使用英文
-- 若使用英文，须在回复中附上中文释义（仅供阅读，不写入提交信息）
-
-### 约束
-
-- 仅分析暂存区的变更内容
-- 提交信息仅包含 `<type>: <description>`，不添加 scope、body 或 footer
+1. 仅分析暂存区的变更内容
+2. 提交信息仅包含 `<type>: <description>`，不添加 scope、body 或 footer
+3. 优先使用最近一次提交所用的语言，无法确定时默认使用英文
+4. 提交信息为英文时，须附中文释义，仅供阅读，不写入提交信息
+5. 同时给出对应的提交命令（如 `git commit -m "<type>: <description>"`），但不代用户执行提交
+6. 暂存区无变更时不生成提交信息，提示用户先暂存文件
+7. 暂存区含多个逻辑独立变更时，按用户指定主题生成信息，不自行合并提交
