@@ -17,3 +17,11 @@ npx skills update -g -y
 - **commit** — 通过分析暂存区更改，生成提交信息，并给出对应的 git commit 命令
 - **md-lint** — 使用 markdownlint-cli2 检测并自动修复 Markdown 文件格式
 - **spring-openfeign-client** — 基于 Spring Cloud OpenFeign 封装第三方 HTTP API
+
+## 其他
+
+[i-have-adhd](https://github.com/ayghri/i-have-adhd)
+
+```bash
+npx skills add ayghri/i-have-adhd -g -a opencode -y
+```
