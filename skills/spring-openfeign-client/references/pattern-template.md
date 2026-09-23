@@ -1,5 +1,7 @@
 # 代码模板
 
+本文件提供可按需裁剪的示意代码，不替代真实 API 契约或项目约定。使用前确认 Spring Boot / Spring Cloud OpenFeign 版本、异常类型、依赖和 JSON 字段；不得把示例状态码、认证协议或字段名直接视为第三方规范。
+
 ## Feign 接口
 
 ```java
@@ -266,8 +268,8 @@ public interface XxxClient { ... }
 ```yaml
 xxx:
   remote-url: https://api.third-party.com
-  mock: true                                 # true=Mock, false=真实调用
-  username: ${THIRD_PARTY_USERNAME}          # 认证用户名（环境变量注入）
-  password: ${THIRD_PARTY_PASSWORD}          # 认证密码（环境变量注入）
-  token-cache-ttl-ms: 3300000               # Token 缓存有效期（毫秒），默认 55 分钟
+  mock: true # true=Mock, false=真实调用
+  username: ${THIRD_PARTY_USERNAME} # 认证用户名（环境变量注入）
+  password: ${THIRD_PARTY_PASSWORD} # 认证密码（环境变量注入）
+  token-cache-ttl-ms: 3300000 # Token 缓存有效期（毫秒），默认 55 分钟
 ```
