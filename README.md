@@ -3,7 +3,7 @@
 ## 安装
 
 ```bash
-npx skills add https://github.com/serosme/agent-skills.git -g -a opencode -y
+npx skills add ssh://git@ssh.github.com:443/serosme/agent-skills.git -g -a opencode -y
 ```
 
 ## 更新
