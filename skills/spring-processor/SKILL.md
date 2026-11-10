@@ -1,6 +1,7 @@
 ---
 name: spring-processor
 description: 在 Spring 工程中按 Processor、Context 与 Handler 模式编排多步骤业务操作，把长流程拆成有序 Handler，并用 Context 传递步骤间的中间结果。当需要新增或改造包含多个可独立描述步骤的写操作，或调整已有 Processor 流程的步骤与顺序时使用。
+disable-model-invocation: true
 ---
 
 # Spring Processor 编排

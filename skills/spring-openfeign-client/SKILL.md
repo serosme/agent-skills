@@ -1,6 +1,7 @@
 ---
 name: spring-openfeign-client
 description: 基于 Spring Cloud OpenFeign 封装第三方 HTTP API，涵盖响应解包、Mock 切换、异常映射和可选认证。当用户需要对接第三方 REST 接口或封装远程调用时使用。
+disable-model-invocation: true
 ---
 
 # Spring OpenFeign Client

@@ -1,6 +1,7 @@
 ---
 name: process-issues-one-by-one
 description: 逐项处理问题、缺陷、告警或待办清单：一次只处理一项，按问题现状、可选方案、用户决策三段出卡，用户回序号即处理；每项只有待处理、已完成、已跳过三个状态。当用户给出清单并要求逐项推进时使用。
+disable-model-invocation: true
 ---
 
 # Process Issues One By One

@@ -1,6 +1,7 @@
 ---
 name: workspace
 description: 初始化工作区，盘点仓库、服务用途、前后端地址、数据库与缓存连接，生成 AGENTS.md 与 workspace.md，并把数据库对上 dbx 里已有的连接、把服务地址落成 browse MCP 可用的允许来源。当工作目录是一个或几个 Git 仓库，或需要知道服务地址、启动方式与数据库连接时使用。
+disable-model-invocation: true
 ---
 
 # Workspace
