@@ -23,9 +23,9 @@
 
 这些类和方法是示例契约；目标项目需映射到实际类型及 API。Repository 示例假设支持 JPA 风格的显式 `saveAndFlush`：
 
-- `me.cloud.shared.processor.Processor` / `Context` / `Handler`，源码见 [pattern-template.md](pattern-template.md)。
-- `me.cloud.shared.exception.BizException` 是项目统一的未检查业务异常（继承 `RuntimeException`），提供 `(String)` 与 `(String, Throwable)` 构造器。
-- 示例使用 Java 17+ 的 `record` 语法；较低 Java 版本应替换为项目 DTO 写法。
+- `me.cloud.shared.processor.Processor`、`Context`、`Handler`，源码见 [pattern-template.md](pattern-template.md)。
+- `me.cloud.shared.exception.BizException` 是项目统一的未检查业务异常，继承 `RuntimeException`，提供 `(String)` 与 `(String, Throwable)` 构造器。
+- 示例使用 Java 17 及以上的 `record` 语法；较低 Java 版本应替换为项目 DTO 写法。
 - `me.cloud.shared.util.PasswordUtil`：`generateSalt()` 生成随机盐；`sm3Hash(明文, 盐)` 返回摘要。参考项目使用随机盐配合 Hutool SM3 摘要；实际实现的随机源、盐长度、字符编码和摘要格式均应按项目安全规范核验，不以方法名推断安全强度。
 - `me.cloud.dao.entity.UserEntity` 保存规范化用户名、盐值、密码摘要和创建时间。
 - `me.cloud.dao.repository.UserRepository` 提供 `existsByUsername` 与 `saveAndFlush`；成功后实体含生成的 ID。数据库对存储的规范化用户名有唯一约束；Repository 在 `saveAndFlush` 阶段识别该约束冲突并抛 `DuplicateUsernameException`，其他完整性异常不转换为此异常。
@@ -162,7 +162,7 @@ public class RegisterUsernameValidateHandler implements Handler<RegisterContext>
 
 ## 步骤 20：处理密码
 
-本例按请求指定演示 SM3 加盐摘要；术语上这是**哈希/摘要，不是加密**。盐值与摘要写入 `Context`，供入库步骤取用。参考项目的 `PasswordUtil` 也采用 SM3 加盐摘要，因此保留为贴近该参考用法的演示；它是快速哈希，不能据此视为推荐的生产密码存储方案。
+本例按请求指定演示 SM3 加盐摘要；术语上这是 **哈希与摘要，不是加密**。盐值与摘要写入 `Context`，供入库步骤取用。参考项目的 `PasswordUtil` 也采用 SM3 加盐摘要，因此保留为贴近该参考用法的演示；它是快速哈希，不能据此视为推荐的生产密码存储方案。
 
 ```java
 package me.cloud.system.processor.register.handler;
@@ -286,17 +286,17 @@ public class RegisterService {
 
 - 存在性查询只用于尽早返回友好错误，不能防止两个并发请求同时通过查询。数据库必须对规范化后的用户名建立唯一约束；`saveAndFlush` 暴露该约束冲突后映射为用户名已存在。只转换用户名约束冲突，不把所有完整性错误都改写为用户名冲突。`saveAndFlush` 适用于 JPA 风格的 Repository；若目标持久化层在提交阶段才暴露唯一冲突，应在事务边界捕获并映射，不能假设 `save` 当场抛出。
 - `trim()` 是本例选定的规范化规则，不代表适用于所有产品。大小写、Unicode 规范化与数据库排序规则必须一致，并与查重及唯一约束使用同一规范化值。
-- SM3 是快速哈希；加盐不能让它变成慢哈希，也不能阻止高速离线猜测。生产系统应按安全规范评估 Argon2id、bcrypt、PBKDF2 等专用密码哈希方案。只有安全要求明确接受时才沿用 SM3，不把本例算法当成默认最佳实践。不要把包含明文密码的 Request/Context 输出到日志，尤其避免直接记录 record 的 `toString()`。
+- SM3 是快速哈希；加盐不能让它变成慢哈希，也不能阻止高速离线猜测。生产系统应按安全规范评估 Argon2id、bcrypt、PBKDF2 等专用密码哈希方案。只有安全要求明确接受时才沿用 SM3，不把本例算法当成默认最佳实践。不要把包含明文密码的 Request 与 Context 输出到日志，尤其避免直接记录 record 的 `toString()`。
 - 本三步流程没有外部副作用。若将来增加短信、邮件等通知，应先确认通知失败是否影响注册；通常在事务提交后处理，或使用 Outbox 等可靠事件方案，避免数据库回滚与外部通知状态不一致。
 - 最小化密码明文生命周期：不要把原始密码复制到 `Context` 字段或额外对象；SM3 如被明确要求使用，应确认摘要算法的输入编码与格式符合安全规范。
 
 ## 调用链与验收
 
-一次成功调用按 `@Order` 执行 10 → 20 → 30：校验步骤写 `normalizedUsername`，密码步骤写 `salt` 与 `passwordHash`，入库步骤复用这些字段并写 `out`，Service 返回响应。任一步抛未检查异常即停止后续 Handler，并使 Service 事务回滚数据库操作。若项目使用检查型异常，需配置相应的 `rollbackFor`。
+一次成功调用按 `@Order` 依次执行 10、20、30：校验步骤写 `normalizedUsername`，密码步骤写 `salt` 与 `passwordHash`，入库步骤复用这些字段并写 `out`，Service 返回响应。任一步抛未检查异常即停止后续 Handler，并使 Service 事务回滚数据库操作。若项目使用检查型异常，需配置相应的 `rollbackFor`。
 
 核对项：
 
 - 三个 Handler 都是 `Handler<RegisterContext>` Bean，且分别引用 Context 中的顺序常量。
 - `RegisterSaveHandler` 拒绝缺失的前序结果；Service 检查响应非空；在目标项目中通过启动检查或测试确认框架确实发现三个 Handler。
-- 明文密码从未写入实体或日志；不要直接记录包含密码的 Request/Context（如 record 的 `toString()`）；数据库唯一约束保护并发注册。
+- 明文密码从未写入实体或日志；不要直接记录包含密码的 Request 与 Context，例如 record 的 `toString()`；数据库唯一约束保护并发注册。
 - 本示例是说明 Processor 编排的静态代码示例，不等同于已在具体项目编译、测试或安全审查。

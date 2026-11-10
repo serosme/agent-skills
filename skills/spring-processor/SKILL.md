@@ -1,6 +1,6 @@
 ---
 name: spring-processor
-description: 在 Spring 工程中按 Processor + Context + Handler 模式编排多步骤业务操作，把长流程拆成有序 Handler，并用 Context 传递步骤间的中间结果。当需要新增或改造包含多个可独立描述步骤的写操作，或调整已有 Processor 流程的步骤与顺序时使用。
+description: 在 Spring 工程中按 Processor、Context 与 Handler 模式编排多步骤业务操作，把长流程拆成有序 Handler，并用 Context 传递步骤间的中间结果。当需要新增或改造包含多个可独立描述步骤的写操作，或调整已有 Processor 流程的步骤与顺序时使用。
 ---
 
 # Spring Processor 编排
@@ -9,15 +9,15 @@ description: 在 Spring 工程中按 Processor + Context + Handler 模式编排�
 
 ### 目标
 
-把包含多个可独立描述步骤的业务操作交给统一的 `Processor` + `Context` + `Handler` 编排：
+把包含多个可独立描述步骤的业务操作交给统一的 `Processor`、`Context`、`Handler` 编排：
 每个步骤一个 `Handler`，步骤间数据经 `Context` 字段传递，
 调用方只负责构造入参、触发编排、取回响应。
 
 ### 适用
 
 - 写操作包含多个可独立描述的步骤时，统一使用该模式编排。
-- 新增多步骤业务操作（创建、更新、删除、上传等），每步都能单独说明条件、输入、过程和输出。
-- 把已有 Service 中流程冗长、职责混杂的方法改造成 `Context` + `Handler` 链。
+- 新增多步骤业务操作，例如创建、更新、删除与上传，每步都能单独说明条件、输入、过程与输出。
+- 把已有 Service 中流程冗长、职责混杂的方法改造成 `Context` 与 `Handler` 链。
 - 为已有 `Context` 增加、拆分或重排步骤。
 - 仓库尚无框架代码时，按模板创建 `Processor`、`Context`、`Handler` 三件套。
 
@@ -34,12 +34,12 @@ description: 在 Spring 工程中按 Processor + Context + Handler 模式编排�
 
 - 目标业务操作：它做什么，以及它的请求与响应类型。
 - 步骤划分：每步做什么、依赖哪些中间结果。用户只给需求描述时，按
-  「校验 → 加工或判权 → 落库 → 派生处理 → 组装响应」的通用顺序起草，并在交付时列出推断结果请其确认。
+  校验、加工或判权、落库、派生处理、组装响应的通用顺序起草，并在交付时列出推断结果请其确认。
 - 框架位置：仓库中 `Processor`、`Context`、`Handler` 的所在包。
 
 ### 必要环境
 
-- Java + Spring Boot 工程，`Processor` 已作为 Spring Bean 可注入。
+- Java 与 Spring Boot 工程，`Processor` 已作为 Spring Bean 可注入。
 - 目标模块的 `processor` 包在组件扫描范围内，Handler 以 `@Service` 注册。
 - 能读取同模块既有的 `Context` 与 `Handler`，作为命名与顺序风格的参照。
 
@@ -77,10 +77,10 @@ description: 在 Spring 工程中按 Processor + Context + Handler 模式编排�
 ### 步骤 2：设计步骤序列并编写 Context
 
 - 操作：
-  - 把操作拆成有序步骤，每步明确「条件、输入、过程、输出」。
+  - 把操作拆成有序步骤，每步明确条件、输入、过程与输出。
   - 每个步骤一个 `public static final int` 顺序常量，按执行顺序声明，
     并在 Javadoc 中写明条件、输入、过程、输出以及 `@see` 实现类。
-  - 顺序值步长 10（10、20、30…），需要插队时取中间值（如 5、15），不复用已有取值。
+  - 顺序值步长 10，即 10、20、30 等，需要插队时取中间值，例如 5、15，不复用已有取值。
   - 跨步骤共享的中间结果声明为 `Context` 字段；整体入参与最终响应由
     `Context<请求类型, 响应类型>` 的泛型承载。
   - 步骤之间没有数据依赖时不要新建字段；无额外字段时不需要 Lombok 注解。
@@ -97,7 +97,7 @@ description: 在 Spring 工程中按 Processor + Context + Handler 模式编排�
     不重复加载上一步已载入的数据。
   - 仅当该步骤确实有条件时才重写 `shouldHandle`，条件判断只读 `Context`。
   - 产出业务响应的那一步调用 `context.setOut(...)`。
-  - 业务失败使用项目统一业务异常（示例以 `BizException` 表示）；类名后缀跟随同包既有风格。
+  - 业务失败使用项目统一业务异常，示例以 `BizException` 表示；类名后缀跟随同包既有风格。
 - 完成标志：
   - 每个步骤都有实现类，`@Order` 引用 `Context` 常量而非字面量。
   - 每个 Handler 的泛型参数就是该 `Context` 类本身；确认组件扫描和泛型匹配能发现全部预期 Handler，不以零 Handler 或缺步骤的空流程报告成功。
@@ -106,7 +106,7 @@ description: 在 Spring 工程中按 Processor + Context + Handler 模式编排�
 
 - 操作：
   - Service 注入 `Processor`，方法体为：
-    `new XxxContext()` → `context.setIn(请求)` → `processor.process(context)` → 检查必需响应非空 → 返回响应。
+    `new XxxContext()`、`context.setIn(请求)`、`processor.process(context)`、检查必需响应非空、返回响应。
   - 入参不是单一 DTO 时，在 `process` 前直接设置 `Context` 字段。
   - 多步数据库写入需要原子性时，在 Service 调用入口划定 `@Transactional` 边界；Handler 通常不各自开启事务。不要未经设计把外部调用纳入数据库事务。
 - 完成标志：
@@ -116,7 +116,7 @@ description: 在 Spring 工程中按 Processor + Context + Handler 模式编排�
 ### 步骤 5：验收并输出
 
 - 操作：
-  - 逐条核对「验收标准」。
+  - 逐条核对 **验收标准**。
   - 命名、顺序常量、`@Order` 引用、有响应流程未写入 `out`、泛型写错等可直接修正的问题，
     修正后重新核对。
   - 步骤划分、事务边界、权限点等业务歧义列入待确认，不自行决定。
@@ -153,7 +153,8 @@ description: 在 Spring 工程中按 Processor + Context + Handler 模式编排�
 ### 交付内容
 
 - 按包路径列出每个新增或修改的 Java 文件及其完整内容。
-- 附一张步骤表：顺序常量 → 顺序值 → Handler 类 → 执行条件。
+- 附一张步骤表，依次列出顺序常量、顺序值、Handler 类、执行条件与响应；
+  无响应流程的响应列写 `无`。
 - 说明未编译、未运行验证的部分，以及列出的待确认项。
 
 ### 验收标准
@@ -161,7 +162,11 @@ description: 在 Spring 工程中按 Processor + Context + Handler 模式编排�
 - 每个 Handler 的泛型参数是传给 `processor.process()` 的那个 `Context` 类本身。
 - 每个 Handler 都是 Spring Bean，并标注 `@Order(XxxContext.常量)`；依赖注入与 Bean 注解沿用目标模块风格，顺序值唯一、无字面量魔数。
 - `Context` 的步骤常量按执行顺序声明，Javadoc 写明条件、输入、过程、输出并指向实现类。
-- 有响应的流程由 `context.setOut()` 产出，Service 在取回响应前检查非空；同时通过启动检查或测试确认预期 Handler 全部注册。无响应流程按其响应类型契约处理。
+- 有响应的流程由 `context.setOut()` 产出，Service 在取回响应前检查非空；
+  交付时列出该 `Context` 的预期 Handler 清单与对应顺序常量，
+  并说明需由用户在目标项目运行启动检查或测试确认全部注册。
+  无响应流程把 `Context` 的响应泛型写成 `Void`，Service 不检查 `out`，
+  并在步骤表的响应列写 `无`。
 - 需要原子性的多步数据库写入由 Service 调用入口管理事务；Handler 不擅自开启独立事务，外部副作用边界已明确。
 - 步骤间流转的中间结果只存放在 `Context` 字段中。
 - 未改动框架类，也未改动无关既有步骤的顺序值。
@@ -178,7 +183,7 @@ description: 在 Spring 工程中按 Processor + Context + Handler 模式编排�
 
 关键预期行为：
 
-- `Context` 按执行顺序声明三个步骤常量（10、20、30），每步一段四段式 Javadoc。
+- `Context` 按执行顺序声明三个步骤常量，取 10、20、30，每步一段四段式 Javadoc。
 - 每个步骤一个 `Handler<RegisterContext>`：校验用户名、处理密码、入库。
 - 密码步骤把盐值与密码摘要写入 `Context`，入库步骤直接取用，不重复计算。
 - 入库并产出响应的那一步调用 `context.setOut(new RegisterResp(userId))`。

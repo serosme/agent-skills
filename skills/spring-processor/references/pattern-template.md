@@ -1,7 +1,7 @@
 # Processor 编排模板
 
-`Processor` + `Context` + `Handler` 的框架源码、各类文件的骨架模板与命名顺序约定。
-本文件保持领域无关，只回答「每类文件长什么样」。
+`Processor`、`Context`、`Handler` 的框架源码、各类文件的骨架模板与命名顺序约定。
+本文件保持领域无关，只回答每类文件长什么样。
 
 需要一份完整流程示例时，读取 [examples.md](examples.md)。
 模板中的 `Xxx` 是占位符，代码骨架中的类型和方法需替换为项目实际定义，不保证可直接编译。
@@ -93,7 +93,7 @@ public class Processor {
 
 ```text
 processor/{操作名}/
-├── {操作名}Context.java              ← 步骤常量 + 跨步骤中间结果字段
+├── {操作名}Context.java              步骤常量与跨步骤中间结果字段
 └── handler/
     ├── {操作名}ValidationHandler.java
     ├── {操作名}PermissionHandler.java
@@ -101,7 +101,7 @@ processor/{操作名}/
     └── {操作名}ResponseHandler.java
 ```
 
-- 一个业务操作一个 `processor/{操作名}` 包，包名用操作语义，多级用子包区分（如 `register`、`record/create`）。
+- 一个业务操作一个 `processor/{操作名}` 包，包名用操作语义，多级用子包区分，例如 `register` 与 `record/create`。
 - Handler 放在同级 `handler` 子包。
 - 类名后缀跟随目标模块同包既有风格；若没有既有风格，统一采用项目约定，不混用 `...Handler` 与 `...HandlerImpl`。
 
@@ -166,15 +166,15 @@ public class XxxContext extends Context<XxxReq, XxxResp> {
 - 有额外字段时加 `@Data` 与 `@EqualsAndHashCode(callSuper = true)`；
   如果使用 `@AllArgsConstructor`，还需提供无参构造器，因为调用方要 `new XxxContext()`。
 - 没有额外字段时不需要任何 Lombok 注解，类体只放步骤常量。
-- 入参不是单一 DTO 时（如无入参操作），把对应泛型位置写成 `Void`，调用方不调用 `setIn`。
+- 入参不是单一 DTO 时，例如无入参操作，把对应泛型位置写成 `Void`，调用方不调用 `setIn`。
 - 入参类型按入口实际使用的请求类声明；同一操作有多个入口时复用同一个请求类，
-  用额外字段区分入口（如一个布尔标记字段加该入口对应的权限点字段）。
+  用额外字段区分入口，例如一个布尔标记字段加该入口对应的权限点字段。
 
 ## Handler 模板
 
 ### 普通步骤
 
-Handler 是 Spring Bean，标注 `@Order(XxxContext.步骤常量)`，泛型参数是该 `Context` 类本身；依赖注入注解（如 `@RequiredArgsConstructor`）沿用目标模块现有风格。
+Handler 是 Spring Bean，标注 `@Order(XxxContext.步骤常量)`，泛型参数是该 `Context` 类本身；依赖注入注解沿用目标模块现有风格，例如 `@RequiredArgsConstructor`。
 代码假设项目有统一业务异常 `BizException` 与 `XxxRepository`；实际类型按目标项目替换。
 
 ```java
@@ -238,7 +238,7 @@ public class XxxProcessHandler implements Handler<XxxContext> {
 
 条件步骤只在业务流程确实需要时添加，不是每个 `Context` 的必需结构。此时在对应 `Context` 中增加一个步骤常量和 Javadoc，并添加 Handler，例如使用空闲值 `XXX_CASCADE = 40`；不要照抄到没有该步骤的流程。
 
-重写 `shouldHandle` 表示「这一步可以整体跳过」，条件只读 `Context`；不成立时 `handle` 完全不会执行。
+重写 `shouldHandle` 表示这一步可以整体跳过，条件只读 `Context`；不成立时 `handle` 完全不会执行。
 
 ```java
 package me.cloud.system.processor.xxx.handler;
@@ -273,7 +273,7 @@ public class XxxCascadeHandler implements Handler<XxxContext> {
 
 - 只用于确实可选的步骤，例如值未变化时跳过派生更新、某资源类型不适用时跳过处理、步骤只对某入口生效。
 - 不要因必需的前序数据缺失而跳过；此类情况应由 Handler 校验并失败，避免流程静默产出不完整结果。
-- 条件只读 `Context`（存量实现均如此）：不查库、不发远程调用；该方法在 `handle` 前调用，应保持为快速、无副作用的判断。
+- 条件只读 `Context`，存量实现均如此：不查库、不发远程调用；该方法在 `handle` 前调用，应保持为快速、无副作用的判断。
 - 不用于表达顺序依赖：依赖前序步骤结果的情况，用步骤顺序加前序步骤抛异常解决。
 
 ### 产出响应
@@ -330,10 +330,10 @@ return context.getOut();
 | 项           | 约定                                                                                |
 | ------------ | ----------------------------------------------------------------------------------- |
 | 顺序常量     | `Context` 上的 `public static final int`，按执行顺序声明                            |
-| 顺序取值     | 步长 10（10、20、30…）；插队取中间值（如 5、15）；不复用已有取值                    |
+| 顺序取值     | 步长 10，即 10、20、30 等；插队取中间值，例如 5、15；不复用已有取值                 |
 | 顺序引用     | 只在 `@Order(XxxContext.常量)` 中引用，不写字面量                                   |
-| 步骤 Javadoc | 条件 / 输入 / 过程 / 输出 四段，末尾 `@see` 实现类                                  |
-| Handler 注解 | Spring Bean + `@Order(...)`；构造器注入方式沿用目标模块风格                         |
+| 步骤 Javadoc | 条件、输入、过程、输出四段，末尾 `@see` 实现类                                      |
+| Handler 注解 | Spring Bean 加 `@Order(...)`；构造器注入方式沿用目标模块风格                        |
 | 请求响应类型 | 优先用 `record`；仓库使用 Lombok 建造器类时沿用 `.builder()...build()`              |
 | 事务         | 按原子性需求由 Service 调用入口划界；Handler 不擅自开启独立事务；外部副作用单独设计 |
 | 步骤命名     | `...ValidationHandler`、`...PermissionHandler`、`...QueryHandler`、`...Handler`     |

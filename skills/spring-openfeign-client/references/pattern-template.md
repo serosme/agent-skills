@@ -1,6 +1,6 @@
 # 代码模板
 
-本文件提供可按需裁剪的示意代码，不替代真实 API 契约或项目约定。使用前确认 Spring Boot / Spring Cloud OpenFeign 版本、异常类型、依赖和 JSON 字段；不得把示例状态码、认证协议或字段名直接视为第三方规范。
+本文件提供可按需裁剪的示意代码，不替代真实 API 契约或项目约定。使用前确认 Spring Boot、Spring Cloud OpenFeign 版本、异常类型、依赖和 JSON 字段；不得把示例状态码、认证协议或字段名直接视为第三方规范。
 
 ## Feign 接口
 
@@ -53,7 +53,7 @@ public class XxxFeignDecoder implements Decoder {
 
 ## 响应泛型包装
 
-> **重要**：必须用 `@JsonProperty` 对齐第三方 JSON key。即使 Java 字段名看起来与 JSON key 相同，第三方也常使用蛇形命名（如 `status_code`），不标注会导致反序列化得到 `null`。
+> **重要**：必须用 `@JsonProperty` 对齐第三方 JSON key。即使 Java 字段名看起来与 JSON key 相同，第三方也常使用蛇形命名，例如 `status_code`，不标注会导致反序列化得到 `null`。
 
 ```java
 @Data
@@ -72,7 +72,7 @@ public class ApiResponse<T> {
 }
 ```
 
-## 请求/响应 DTO
+## 请求与响应 DTO
 
 ```java
 @Data
@@ -100,7 +100,7 @@ XxxResp formSubmit(@RequestParam("name") String name);
 
 ## ErrorDecoder
 
-> **必须实现**。Decoder 仅在 2xx 时调用；4xx/5xx 响应走 ErrorDecoder。不实现则抛出原始 `FeignException`。
+> **必须实现**。Decoder 仅在 2xx 时调用；4xx 与 5xx 响应走 ErrorDecoder。不实现则抛出原始 `FeignException`。
 
 ```java
 public class XxxErrorDecoder implements ErrorDecoder {
@@ -139,7 +139,7 @@ public class XxxFeignConfig {
 }
 ```
 
-## 认证模块（需要时）
+## 认证模块
 
 ### 认证专用 Feign Client
 
@@ -151,7 +151,7 @@ public interface AuthClient {
 }
 ```
 
-### 登录请求/响应 DTO
+### 登录请求与响应 DTO
 
 ```java
 @Data
@@ -232,7 +232,7 @@ public class AuthFeignInterceptor implements RequestInterceptor {
 
 ### 在业务 FeignClient 上注册拦截器
 
-在 `XxxFeignConfig` 中通过 `@Bean` 注册拦截器（**FeignConfig 不能加 `@Configuration` 注解**，也不能直接在 `configuration` 属性中写拦截器实现类——那样不会被注册到 Feign 请求链中）：
+在 `XxxFeignConfig` 中通过 `@Bean` 注册拦截器。注意 **FeignConfig 不能加 `@Configuration` 注解**，也不能直接在 `configuration` 属性中写拦截器实现类，那样不会被注册到 Feign 请求链中：
 
 ```java
 public class XxxFeignConfig {
