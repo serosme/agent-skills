@@ -11,10 +11,10 @@
 
 | 服务               | 仓库          | 用途              | 地址                    |
 | ------------------ | ------------- | ----------------- | ----------------------- |
-| easy-cloud-gateway | easy-cloud    | 网关              | <http://127.0.0.1:8080> |
-| easy-cloud-auth    | easy-cloud    | 认证              | <http://127.0.0.1:8081> |
-| easy-cloud-chat    | easy-cloud    | 对话              | <http://127.0.0.1:8082> |
-| easy-cloud-ui      | easy-cloud-ui | 前端              | <http://127.0.0.1:3000> |
+| easy-cloud-gateway | easy-cloud    | 网关              | <http://localhost:8080> |
+| easy-cloud-auth    | easy-cloud    | 认证              | <http://localhost:8081> |
+| easy-cloud-chat    | easy-cloud    | 对话              | <http://localhost:8082> |
+| easy-cloud-ui      | easy-cloud-ui | 前端              | <http://localhost:3000> |
 
 ## 基础设施
 
@@ -22,10 +22,10 @@
 
 | 类型  | 主机      | 端口 | 库名       | 账号 | 密码         | connection_id                        |
 | ----- | --------- | ---- | ---------- | ---- | ------------ | ------------------------------------ |
-| mysql | 127.0.0.1 | 3306 | easy_cloud | root | Password@123 | a8bd8f7b-1c62-47a7-b768-64eeb366f5a9 |
+| mysql | localhost | 3306 | easy_cloud | root | Password@123 | a8bd8f7b-1c62-47a7-b768-64eeb366f5a9 |
 
 ### 缓存
 
 | 类型  | 主机      | 端口 | 库号 | 密码         | connection_id                        |
 | ----- | --------- | ---- | ---- | ------------ | ------------------------------------ |
-| redis | 127.0.0.1 | 6379 | 0    | Password@123 | ea057df5-afe9-4689-ba33-ae9d1d7e71e5 |
+| redis | localhost | 6379 | 0    | Password@123 | ea057df5-afe9-4689-ba33-ae9d1d7e71e5 |
