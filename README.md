@@ -1,13 +1,14 @@
 # agent-skills
 
-## 安装
-
 ```bash
 npx skills add ssh://git@ssh.github.com:443/serosme/agent-skills.git -g -y
-```
 
-## 更新
+mise use -g npm:agent-browser
+npx skills add ssh://git@ssh.github.com:443/vercel-labs/agent-browser -g -y
 
-```bash
-npx skills update -g -y
+mise use -g npm:@dbx-app/cli
+dbx agent setup
+
+mise use -g gh
+gh skill install cli/cli gh --agent universal --scope user
 ```
