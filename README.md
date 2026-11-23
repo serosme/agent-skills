@@ -1,7 +1,11 @@
 # agent-skills
 
+## Installation
+
 ```bash
 npx skills add ssh://git@ssh.github.com:443/serosme/agent-skills.git -g -y
+
+npx skills add ssh://git@ssh.github.com:443/antfu/skills.git --skill antfu-query --skill antfu-simplify -g -y
 
 mise use -g npm:agent-browser
 npx skills add ssh://git@ssh.github.com:443/vercel-labs/agent-browser -g -y
